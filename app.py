@@ -475,7 +475,7 @@ def main():
     if target_address.strip() and target_lat and target_lon:
         
         # Summary
-        st.subheader("📋 Summary")
+        st.markdown("<h4 style='font-size:16px; margin-bottom:0;'>📋 Summary</h4>", unsafe_allow_html=True)
         
         summary_col1, summary_col2, summary_col3 = st.columns(3)
         
