@@ -4,6 +4,7 @@ import geopandas as gpd
 from shapely.geometry import Point
 from folium import Map, Marker, Circle
 from folium.plugins import HeatMap
+import folium
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderServiceError
 import plotly.express as px
@@ -261,12 +262,53 @@ def get_market_saturation_level(competitor_count):
 # VISUALIZATION FUNCTIONS - MINIMALIST DESIGN
 # ============================================================================
 
-def create_heatmap(df):
-    """Create saturation heatmap centered on Bandung"""
+def create_heatmap(df, target_lat=None, target_lon=None, competitors=None):
+    """Create saturation heatmap centered on Bandung, optionally with target location and competitors"""
     bandung_center = [-6.91, 107.61]
-    m = Map(location=bandung_center, zoom_start=12, tiles='cartodbdark_matter')
+    
+    # If target location provided, center on it; otherwise center on Bandung
+    if target_lat and target_lon:
+        map_center = [target_lat, target_lon]
+        zoom = 13
+    else:
+        map_center = bandung_center
+        zoom = 12
+    
+    m = Map(location=map_center, zoom_start=zoom, tiles='cartodbdark_matter')
+    
+    # Add heatmap layer
     heat_data = [[row['latitude'], row['longitude']] for idx, row in df.iterrows()]
-    HeatMap(heat_data, radius=15, blur=10, gradient={0.4: '#3b82f6', 0.65: '#60a5fa', 1: '#93c5fd'}).add_to(m)
+    HeatMap(heat_data, radius=15, blur=10, gradient={0.4: '#f97316', 0.65: '#fb923c', 1: '#fdba74'}).add_to(m)
+    
+    # Add target location marker and buffer if provided
+    if target_lat and target_lon:
+        Circle(
+            location=[target_lat, target_lon],
+            radius=1000,
+            color='#22c55e',
+            fill=True,
+            fillColor='#22c55e',
+            fillOpacity=0.2,
+            popup='1 KM Buffer Zone'
+        ).add_to(m)
+        
+        Marker(
+            location=[target_lat, target_lon],
+            popup='<b>Target Location</b>',
+            icon=folium.Icon(color='green', icon='star', prefix='fa')
+        ).add_to(m)
+        
+        # Add competitor markers
+        if competitors:
+            for comp in competitors:
+                comp_lat = df[df['name'] == comp['name']]['latitude'].values[0]
+                comp_lon = df[df['name'] == comp['name']]['longitude'].values[0]
+                Marker(
+                    location=[comp_lat, comp_lon],
+                    popup=f"<b>{comp['name']}</b><br>District: {comp['district']}<br>Rating: {comp['rating']}<br>Distance: {comp['distance']} km",
+                    icon=folium.Icon(color='red', icon='coffee')
+                ).add_to(m)
+    
     return m
 
 def create_map_with_buffer(target_lat, target_lon, df, competitors):
@@ -310,7 +352,7 @@ def create_district_chart(df):
         x='District',
         y='Count',
         color='Count',
-        color_continuous_scale=['#3b82f6', '#60a5fa', '#93c5fd'],
+        color_continuous_scale=['#f97316', '#fb923c', '#fdba74'],  # Orange gradient for high contrast
         title='Coffee Shop Distribution by District',
         text='Count'
     )
@@ -325,7 +367,7 @@ def create_district_chart(df):
         margin=dict(l=20, r=20, t=40, b=20)
     )
     
-    fig.update_traces(marker=dict(line=dict(color='#3b82f6', width=1)))
+    fig.update_traces(marker=dict(line=dict(color='#ea580c', width=1)))
     
     return fig
 
@@ -408,26 +450,29 @@ def main():
     # MAIN AREA - VISUALIZATIONS
     # =========================================================================
     
-    # Row 1: Heatmap and District Chart
-    col1, col2 = st.columns(2)
+    # Unified Map: Heatmap + Result Address (bigger map at height 600)
+    if target_address.strip() and target_lat and target_lon:
+        st.subheader(f"🔥 Competition Heatmap & Analysis: {target_address}")
+        # Unified map with heatmap + target location + competitors
+        unified_map = create_heatmap(df, target_lat, target_lon, competitors_in_radius)
+        folium_static(unified_map, height=600)
     
-    with col1:
+    # Row: Heatmap only (when no address entered)
+    else:
         st.subheader("🔥 Competition Heatmap")
         heatmap = create_heatmap(df)
-        folium_static(heatmap, height=400)
+        folium_static(heatmap, height=600)
     
-    with col2:
+    # Row: District Chart (slimmer at height 300)
+    col_chart, col_spacer = st.columns([1, 1])
+    
+    with col_chart:
         st.subheader("📊 District Distribution")
         district_chart = create_district_chart(df)
-        st.plotly_chart(district_chart, use_container_width=True, height=400)
+        st.plotly_chart(district_chart, use_container_width=True, height=300)
     
-    # Row 2: Buffer Analysis
+    # Row 2: Buffer Analysis (only when address is entered)
     if target_address.strip() and target_lat and target_lon:
-        st.markdown("---")
-        st.subheader(f"📍 Analysis: {target_address}")
-        
-        buffer_map = create_map_with_buffer(target_lat, target_lon, df, competitors_in_radius)
-        folium_static(buffer_map, height=450)
         
         # Summary
         st.subheader("📋 Summary")
@@ -467,7 +512,6 @@ def main():
 
 if __name__ == "__main__":
     from streamlit_folium import folium_static
-    import folium
     
     main()
 
