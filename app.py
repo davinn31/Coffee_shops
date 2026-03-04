@@ -729,13 +729,9 @@ def main():
         st.sidebar.markdown("---")
         st.sidebar.markdown('<p class="section-title">📈 Results</p>', unsafe_allow_html=True)
         
-        col_r1, col_r2, col_r3 = st.sidebar.columns(3)
-        with col_r1:
-            st.metric("Competitors", competitor_count)
-        with col_r2:
-            st.metric("Saturation", saturation_level)
-        with col_r3:
-            st.metric("Score", f"{suitability_score}/100")
+        st.sidebar.metric("Competitors", competitor_count)
+        st.sidebar.metric("Saturation", saturation_level)
+        st.sidebar.metric("Score", f"{suitability_score}/100")
         
         # Show competitor details
         if competitors_in_radius:
