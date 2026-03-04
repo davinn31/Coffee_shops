@@ -14,6 +14,14 @@ if not exist ".git" (
 
 REM Check current branch
 for /f "tokens=*" %%i in ('git rev-parse --abbrev-ref HEAD') do set BRANCH=%%i
+
+REM Rename master to main if needed
+if "%BRANCH%"=="master" (
+    echo Renaming branch from master to main...
+    git branch -M main
+    set BRANCH=main
+)
+
 echo Current branch: %BRANCH%
 
 REM Check if there are any commits
@@ -38,6 +46,7 @@ git commit -m "%msg%"
 echo.
 
 echo Pushing to GitHub...
+git pull origin %BRANCH% --allow-unrelated-histories
 git push origin %BRANCH%
 echo.
 
@@ -47,7 +56,7 @@ if errorlevel 1 (
     echo ERROR: Push failed!
     echo.
     echo Make sure you have run:
-    echo   git remote add origin https://github.com/davinn31/TUBES_PDS.git
+    echo   git remote add origin https://github.com/davinn31/Coffee_shops.git
     echo ========================================
 ) else (
     echo ========================================
@@ -56,3 +65,4 @@ if errorlevel 1 (
 )
 
 pause
+
