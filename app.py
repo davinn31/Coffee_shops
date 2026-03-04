@@ -68,17 +68,56 @@ st.markdown("""
         color: var(--text);
     }
     
-    /* Sidebar */
+    /* Sidebar - Minimalist UX Principles */
     [data-testid="stSidebar"] {
         background: var(--card-bg);
         border-right: 1px solid var(--border);
         padding: 1rem;
+        /* Fixed Dimensioning */
+        width: 260px !important;
+        min-width: 260px !important;
+        max-width: 260px !important;
+        /* Screen Ratio Balance: Max 20% of viewport */
+        max-width: 20vw !important;
+    }
+    
+    /* Collapsed state */
+    [data-testid="stSidebar"][aria-expanded="false"] {
+        width: 64px !important;
+        min-width: 64px !important;
+        max-width: 64px !important;
     }
     
     [data-testid="stSidebar"] h1,
     [data-testid="stSidebar"] h2,
     [data-testid="stSidebar"] h3 {
         color: var(--text);
+    }
+    
+    /* Standardized Click-Targets: 44px minimum for accessibility */
+    [data-testid="stSidebar"] .stButton > button,
+    [data-testid="stSidebar"] .stTextInput > div > div > input,
+    [data-testid="stSidebar"] .stSelectbox > div > div,
+    [data-testid="stSidebar"] .stMultiSelect > div > div,
+    [data-testid="stSidebar"] .stSlider [role="slider"],
+    [data-testid="stSidebar"] [data-baseweb="select"] > div,
+    [data-testid="stSidebar"] .stMarkdown,
+    [data-testid="stSidebar"] .metric-card {
+        min-height: 44px;
+    }
+    
+    /* Ensure all interactive elements have proper touch targets */
+    [data-testid="stSidebar"] button,
+    [data-testid="stSidebar"] input,
+    [data-testid="stSidebar"] select,
+    [data-testid="stSidebar"] [role="combobox"] {
+        min-height: 44px;
+        padding: 10px 12px;
+    }
+    
+    /* Sidebar expander for collapsed state */
+    [data-testid="stSidebarNav"] {
+        min-height: 44px;
     }
     
     /* Cards */
