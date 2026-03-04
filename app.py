@@ -7,229 +7,217 @@ from folium.plugins import HeatMap
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderServiceError
 import plotly.express as px
-import plotly.graph_objects as go
 from math import radians, cos, sin, asin, sqrt
 import warnings
 
 warnings.filterwarnings('ignore')
 
-# Page Configuration
+# ============================================================================
+# PAGE CONFIGURATION
+# ============================================================================
+
 st.set_page_config(
-    page_title="Bandung Coffee Shop Site Selection Dashboard",
+    page_title="Bandung Coffee Shop Site Selection",
     page_icon="☕",
     layout="wide"
 )
 
 # ============================================================================
-# CUSTOM CSS FOR HIGH-CONTRAST DARK MODE
+# MINIMALIST CSS - Clean Sans-Serif Typography
 # ============================================================================
 
-# Define color palette
-DARK_CHARCOAL = "#1a1a2e"
-DEEP_NAVY = "#16213e"
-TEAL = "#0f969c"
-ELECTRIC_BLUE = "#00b4d8"
-GOLD = "#ffd700"
-WHITE = "#ffffff"
-LIGHT_GRAY = "#e0e0e0"
-DARK_TEXT = "#0f0f0f"
-
-# Apply custom CSS for dark mode theme
-st.markdown(f"""
+st.markdown("""
     <style>
-    /* Main Background - Dark Charcoal / Deep Navy */
-    .stApp {{
-        background-color: {DARK_CHARCOAL};
-        color: {WHITE};
-    }}
+    /* Clean Sans-Serif Typography System */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     
-    /* Sidebar Background */
-    [data-testid="stSidebar"] {{
-        background-color: {DEEP_NAVY};
-    }}
+    :root {
+        --primary: #2563eb;
+        --secondary: #64748b;
+        --success: #22c55e;
+        --warning: #f59e0b;
+        --error: #ef4444;
+        --bg: #ffffff;
+        --surface: #f8fafc;
+        --text: #1e293b;
+        --border: #e2e8f0;
+    }
     
-    /* Sidebar Text */
-    [data-testid="stSidebar"] .stMarkdown, 
-    [data-testid="stSidebar"] .stText,
-    [data-testid="stSidebar"] .stMetric label,
-    [data-testid="stSidebar"] .stMetric div,
-    [data-testid="stSidebar"] .stSubheader,
-    [data-testid="stSidebar"] h1, 
-    [data-testid="stSidebar"] h2, 
-    [data-testid="stSidebar"] h3 {{
-        color: {WHITE} !important;
-    }}
+    /* Dark mode overrides */
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --primary: #3b82f6;
+            --secondary: #94a3b8;
+            --success: #4ade80;
+            --warning: #fbbf24;
+            --error: #f87171;
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --text: #f1f5f9;
+            --border: #334155;
+        }
+    }
     
-    /* Headers and Titles */
-    h1, h2, h3, h4, h5, h6 {{
-        color: {ELECTRIC_BLUE} !important;
-    }}
+    /* Base Typography - Sans-Serif */
+    html, body, [class*="css"] {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+        font-size: 15px;
+        line-height: 1.6;
+    }
     
-    /* Metrics */
-    [data-testid="stMetric"] {{
-        background-color: {DEEP_NAVY};
-        padding: 15px;
-        border-radius: 10px;
-        border: 1px solid {TEAL};
-    }}
+    /* Headers */
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        font-weight: 600;
+        color: var(--text);
+    }
     
-    [data-testid="stMetric"] label {{
-        color: {TEAL} !important;
-    }}
+    /* Main App Background */
+    .stApp {
+        background-color: var(--bg);
+        color: var(--text);
+    }
     
-    [data-testid="stMetric"] div {{
-        color: {WHITE} !important;
-    }}
+    /* Sidebar */
+    [data-testid="stSidebar"] {
+        background-color: var(--surface);
+        border-right: 1px solid var(--border);
+    }
     
-    /* Input Fields */
-    .stTextInput > div > div > input {{
-        background-color: {DEEP_NAVY};
-        color: {WHITE};
-        border: 1px solid {TEAL};
-    }}
+    /* Metrics - Clean styling */
+    [data-testid="stMetric"] {
+        background-color: var(--surface);
+        padding: 12px 16px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+    }
     
-    .stTextInput > div > div > input:focus {{
-        border-color: {ELECTRIC_BLUE};
-    }}
+    [data-testid="stMetric"] label {
+        color: var(--secondary) !important;
+        font-size: 13px;
+        font-weight: 500;
+    }
+    
+    [data-testid="stMetric"] div {
+        color: var(--text) !important;
+        font-size: 24px;
+        font-weight: 600;
+    }
+    
+    /* Inputs */
+    .stTextInput > div > div > input {
+        background-color: var(--surface);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+    }
     
     /* Buttons */
-    .stButton > button {{
-        background-color: {TEAL};
-        color: {WHITE};
+    .stButton > button {
+        background-color: var(--primary);
+        color: white;
         border: none;
-    }}
+        border-radius: 6px;
+        font-weight: 500;
+    }
     
-    .stButton > button:hover {{
-        background-color: {ELECTRIC_BLUE};
-    }}
+    .stButton > button:hover {
+        background-color: #1d4ed8;
+    }
     
-    /* Dataframes */
-    [data-testid="stDataFrame"] {{
-        background-color: {DEEP_NAVY};
-    }}
+    /* Cards/Containers */
+    .stMarkdown, .stText {
+        color: var(--text);
+    }
     
-    /* Expanders */
-    .streamlit-expanderHeader {{
-        background-color: {DEEP_NAVY};
-        color: {WHITE} !important;
-    }}
-    
-    /* Info/Warning/Success/Error boxes */
-    .stInfo {{
-        background-color: {DEEP_NAVY};
-        border-left: 4px solid {ELECTRIC_BLUE};
-        color: {WHITE};
-    }}
-    
-    .stWarning {{
-        background-color: {DEEP_NAVY};
-        border-left: 4px solid {GOLD};
-        color: {WHITE};
-    }}
-    
-    .stSuccess {{
-        background-color: {DEEP_NAVY};
-        border-left: 4px solid {TEAL};
-        color: {WHITE};
-    }}
-    
-    .stError {{
-        background-color: {DEEP_NAVY};
-        border-left: 4px solid #ff6b6b;
-        color: {WHITE};
-    }}
-    
-    /* Spinner */
-    [data-testid="stSpinner"] {{
-        color: {ELECTRIC_BLUE};
-    }}
-    
-    /* DataFrame table styling */
-    div[data-testid="stDataFrame"] table {{
-        color: {WHITE};
-    }}
-    
-    div[data-testid="stDataFrame"] th {{
-        background-color: {TEAL} !important;
-        color: {WHITE} !important;
-    }}
-    
-    div[data-testid="stDataFrame"] td {{
-        background-color: {DEEP_NAVY};
-        color: {WHITE};
-    }}
-    
-    /* Scrollbar styling */
-    ::-webkit-scrollbar {{
-        width: 10px;
-    }}
-    
-    ::-webkit-scrollbar-track {{
-        background: {DARK_CHARCOAL};
-    }}
-    
-    ::-webkit-scrollbar-thumb {{
-        background: {TEAL};
-        border-radius: 5px;
-    }}
+    /* DataFrame */
+    [data-testid="stDataFrame"] {
+        background-color: var(--surface);
+    }
     </style>
     """, unsafe_allow_html=True)
 
 # ============================================================================
-# DATA INITIALIZATION
+# DATA LOADING WITH ERROR RECOVERY
 # ============================================================================
 
 @st.cache_data
 def load_coffee_shop_data():
-    """Load and process coffee shop dataset"""
-    df = pd.read_csv('band_coffee_shops.csv')
-    return df
+    """Load coffee shop data with error handling"""
+    try:
+        df = pd.read_csv('band_coffee_shops.csv')
+        # Validate required columns
+        required_cols = ['name', 'latitude', 'longitude', 'district', 'rating']
+        missing = [col for col in required_cols if col not in df.columns]
+        if missing:
+            raise ValueError(f"Missing required columns: {missing}")
+        return df
+    except FileNotFoundError:
+        st.error("Data file not found. Please ensure 'band_coffee_shops.csv' exists in the project directory.")
+        return None
+    except pd.errors.EmptyDataError:
+        st.error("The data file is empty. Please provide a valid CSV file.")
+        return None
+    except Exception as e:
+        st.error(f"Error loading data: {str(e)}")
+        return None
 
 def create_geodataframe(df):
     """Create GeoDataFrame from DataFrame"""
+    if df is None:
+        return None
     geometry = [Point(lon, lat) for lon, lat in zip(df['longitude'], df['latitude'])]
     gdf = gpd.GeoDataFrame(df, geometry=geometry, crs="EPSG:4326")
     return gdf
 
 # ============================================================================
-# GEOCODING ENGINE
+# GEOCODING ENGINE WITH RETRY LOGIC
 # ============================================================================
 
-def geocode_address(address, geolocator):
-    """Convert address to lat/long using Nominatim"""
-    try:
-        location = geolocator.geocode(address + ", Bandung, Indonesia")
-        if location:
-            return location.latitude, location.longitude
+def geocode_address(address, geolocator, max_retries=3):
+    """Convert address to lat/long with retry logic"""
+    if not address or not address.strip():
         return None, None
-    except (GeocoderTimedOut, GeocoderServiceError) as e:
-        st.error(f"Geocoding error: {str(e)}")
-        return None, None
+    
+    for attempt in range(max_retries):
+        try:
+            location = geolocator.geocode(address + ", Bandung, Indonesia", timeout=10)
+            if location:
+                return location.latitude, location.longitude
+            else:
+                return None, None
+        except GeocoderTimedOut:
+            if attempt < max_retries - 1:
+                continue
+            st.warning("Geocoding service timed out. Please try again.")
+            return None, None
+        except GeocoderServiceError as e:
+            st.warning(f"Geocoding service error: {str(e)}. Please try again later.")
+            return None, None
+        except Exception as e:
+            st.error(f"Unexpected geocoding error: {str(e)}")
+            return None, None
+    
+    return None, None
 
 # ============================================================================
 # BUFFER & GAP ANALYSIS
 # ============================================================================
 
 def haversine_distance(lat1, lon1, lat2, lon2):
-    """
-    Calculate the great circle distance in kilometers between two points 
-    on the earth (specified in decimal degrees)
-    """
-    # Convert decimal degrees to radians
+    """Calculate distance in kilometers between two points"""
     lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
-    
-    # Haversine formula
     dlon = lon2 - lon1
     dlat = lat2 - lat1
     a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
     c = 2 * asin(sqrt(a))
-    
-    # Radius of earth in kilometers
     r = 6371
     return c * r
 
 def find_competitors_in_radius(target_lat, target_lon, df, radius_km=1.0):
     """Find competitors within specified radius"""
+    if df is None:
+        return []
     competitors = []
     for idx, row in df.iterrows():
         distance = haversine_distance(
@@ -246,11 +234,7 @@ def find_competitors_in_radius(target_lat, target_lon, df, radius_km=1.0):
     return competitors
 
 def calculate_suitability_score(competitor_count):
-    """
-    Calculate suitability score based on competitor count
-    Lower competitors = Higher score
-    Score range: 0-100
-    """
+    """Calculate suitability score based on competitor count"""
     if competitor_count == 0:
         return 100
     elif competitor_count <= 3:
@@ -265,7 +249,7 @@ def calculate_suitability_score(competitor_count):
         return max(20, 50 - (competitor_count * 3))
 
 def get_market_saturation_level(competitor_count):
-    """Determine market saturation level based on competitor count"""
+    """Determine market saturation level"""
     if competitor_count <= 3:
         return "Low"
     elif competitor_count <= 7:
@@ -274,47 +258,38 @@ def get_market_saturation_level(competitor_count):
         return "High"
 
 # ============================================================================
-# VISUALIZATION FUNCTIONS
+# VISUALIZATION FUNCTIONS - MINIMALIST DESIGN
 # ============================================================================
 
 def create_heatmap(df):
     """Create saturation heatmap centered on Bandung"""
     bandung_center = [-6.91, 107.61]
-    # Use dark tiles for high-contrast dark mode
     m = Map(location=bandung_center, zoom_start=12, tiles='cartodbdark_matter')
-    
-    # Prepare heat data with Teal/Electric Blue gradient
     heat_data = [[row['latitude'], row['longitude']] for idx, row in df.iterrows()]
-    # Use Teal to Electric Blue gradient colors
-    HeatMap(heat_data, radius=15, blur=10, gradient={0.4: '#0f969c', 0.65: '#00b4d8', 1: '#00ffff'}).add_to(m)
-    
+    HeatMap(heat_data, radius=15, blur=10, gradient={0.4: '#3b82f6', 0.65: '#60a5fa', 1: '#93c5fd'}).add_to(m)
     return m
 
 def create_map_with_buffer(target_lat, target_lon, df, competitors):
     """Create map with target location, buffer radius, and competitor markers"""
     bandung_center = [target_lat, target_lon]
-    # Use dark tiles for high-contrast dark mode
     m = Map(location=bandung_center, zoom_start=14, tiles='cartodbdark_matter')
     
-    # Add buffer circle (1km radius) - Teal color
     Circle(
         location=[target_lat, target_lon],
-        radius=1000,  # meters
-        color='#0f969c',  # Teal
+        radius=1000,
+        color='#3b82f6',
         fill=True,
-        fillColor='#0f969c',  # Teal
+        fillColor='#3b82f6',
         fillOpacity=0.2,
         popup='1 KM Buffer Zone'
     ).add_to(m)
     
-    # Add target marker - Gold color for highlight
     Marker(
         location=[target_lat, target_lon],
         popup='<b>Target Location</b>',
         icon=folium.Icon(color='orange', icon='star', prefix='fa')
     ).add_to(m)
     
-    # Add competitor markers - Electric Blue
     for comp in competitors:
         Marker(
             location=[df[df['name'] == comp['name']]['latitude'].values[0],
@@ -328,42 +303,29 @@ def create_map_with_buffer(target_lat, target_lon, df, competitors):
 def create_district_chart(df):
     """Create bar chart showing coffee shop distribution by district"""
     district_counts = df['district'].value_counts().reset_index()
-    district_counts.columns = ['District', 'Number of Coffee Shops']
+    district_counts.columns = ['District', 'Count']
     
-    # Use Teal/Electric Blue color scale
     fig = px.bar(
         district_counts,
         x='District',
-        y='Number of Coffee Shops',
-        color='Number of Coffee Shops',
-        color_continuous_scale=['#0f969c', '#00b4d8', '#00ffff'],
-        title='Coffee Shop Distribution by District in Bandung',
-        text='Number of Coffee Shops'
+        y='Count',
+        color='Count',
+        color_continuous_scale=['#3b82f6', '#60a5fa', '#93c5fd'],
+        title='Coffee Shop Distribution by District',
+        text='Count'
     )
     
-    # Update layout for dark theme
     fig.update_layout(
         xaxis_title='District',
         yaxis_title='Number of Coffee Shops',
         showlegend=False,
-        font=dict(size=12, color='#ffffff'),
-        width=None,
-        paper_bgcolor='#16213e',
-        plot_bgcolor='#16213e',
-        xaxis=dict(
-            title_font=dict(color='#00b4d8'),
-            tickfont=dict(color='#ffffff'),
-            gridcolor='#0f969c'
-        ),
-        yaxis=dict(
-            title_font=dict(color='#00b4d8'),
-            tickfont=dict(color='#ffffff'),
-            gridcolor='#0f969c'
-        ),
-        title_font=dict(color='#00b4d8')
+        font=dict(size=12, family='Inter, sans-serif'),
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        margin=dict(l=20, r=20, t=40, b=20)
     )
     
-    fig.update_traces(marker=dict(line=dict(color='#00ffff', width=1)))
+    fig.update_traces(marker=dict(line=dict(color='#3b82f6', width=1)))
     
     return fig
 
@@ -372,46 +334,49 @@ def create_district_chart(df):
 # ============================================================================
 
 def main():
-    # Title and Header
-    st.title("☕ Bandung Coffee Shop Site Selection Dashboard")
-    st.markdown("### Decision Support System (DSS) for Coffee Shop Location Analysis")
+    # Title
+    st.title("☕ Bandung Coffee Shop Site Selection")
+    st.markdown("Analyze locations for new coffee shops in Bandung")
     st.markdown("---")
     
-    # Load Data
+    # Load Data with Error Handling
     df = load_coffee_shop_data()
+    
+    if df is None:
+        st.warning("Please ensure the data file is properly configured.")
+        return
+    
     gdf = create_geodataframe(df)
     
     # =========================================================================
-    # SIDEBAR - INPUT AND KEY METRICS
+    # SIDEBAR - INPUT AND METRICS
     # =========================================================================
     
-    st.sidebar.header("📍 Target Location Input")
+    st.sidebar.header("📍 Target Location")
     
-    # Address Input
+    # Address Input with Validation
     target_address = st.sidebar.text_input(
-        "Enter Target Address (Bandung)",
-        placeholder="e.g., Jalan Braga, Jalan Sudirman",
+        "Enter Address (Bandung)",
+        placeholder="e.g., Jalan Braga",
         value=""
     )
     
-    # Geocoding
     geolocator = Nominatim(user_agent="bandung_coffee_dss")
     
     target_lat = None
     target_lon = None
     
-    if target_address:
-        with st.sidebar.spinner("Geocoding address..."):
+    if target_address.strip():
+        with st.sidebar.spinner("Finding location..."):
             target_lat, target_lon = geocode_address(target_address, geolocator)
         
         if target_lat is None:
-            st.sidebar.error("Address not found! Please try a different address in Bandung.")
+            st.sidebar.warning("Address not found. Try a different location in Bandung.")
     
-    # Key Metrics Display
+    # Key Metrics
     st.sidebar.markdown("---")
-    st.sidebar.header("📊 Key Metrics")
+    st.sidebar.header("📊 Analysis Metrics")
     
-    # Calculate and display metrics
     competitors_in_radius = []
     competitor_count = 0
     suitability_score = 0
@@ -423,88 +388,84 @@ def main():
         suitability_score = calculate_suitability_score(competitor_count)
         saturation_level = get_market_saturation_level(competitor_count)
     
-    # Display metrics in sidebar
-    st.sidebar.metric("Total Competitors in 1KM Radius", competitor_count)
-    st.sidebar.metric("Market Saturation Level", saturation_level)
-    st.sidebar.metric("Suitability Score", f"{suitability_score}/100")
+    # Display metrics
+    st.sidebar.metric("Competitors (1KM)", competitor_count)
+    st.sidebar.metric("Saturation", saturation_level)
+    st.sidebar.metric("Suitability", f"{suitability_score}/100")
     
-    # Display competitor details
+    # Competitor details
     if competitors_in_radius:
         st.sidebar.markdown("---")
-        st.sidebar.subheader("🏪 Competitors in 1KM Radius")
+        st.sidebar.subheader("🏪 Nearby Competitors")
         comp_df = pd.DataFrame(competitors_in_radius)
         st.sidebar.dataframe(
             comp_df[['name', 'distance', 'district']].sort_values('distance'),
-            hide_index=True
+            hide_index=True,
+            use_container_width=True
         )
     
     # =========================================================================
     # MAIN AREA - VISUALIZATIONS
     # =========================================================================
     
-    # Row 1: Heatmap and District Distribution
+    # Row 1: Heatmap and District Chart
     col1, col2 = st.columns(2)
     
     with col1:
-        st.subheader("🔥 Competitor Saturation Heatmap")
+        st.subheader("🔥 Competition Heatmap")
         heatmap = create_heatmap(df)
         folium_static(heatmap, height=400)
     
     with col2:
         st.subheader("📊 District Distribution")
         district_chart = create_district_chart(df)
-        st.plotly_chart(district_chart, width='stretch', height=400)
+        st.plotly_chart(district_chart, use_container_width=True, height=400)
     
-    # Row 2: Buffer Analysis Map (when address is provided)
-    if target_address and target_lat and target_lon:
+    # Row 2: Buffer Analysis
+    if target_address.strip() and target_lat and target_lon:
         st.markdown("---")
-        st.subheader(f"📍 Buffer Analysis for: {target_address}")
+        st.subheader(f"📍 Analysis: {target_address}")
         
         buffer_map = create_map_with_buffer(target_lat, target_lon, df, competitors_in_radius)
-        folium_static(buffer_map, height=500)
+        folium_static(buffer_map, height=450)
         
-        # Analysis Summary
-        st.markdown("### 📋 Analysis Summary")
+        # Summary
+        st.subheader("📋 Summary")
         
         summary_col1, summary_col2, summary_col3 = st.columns(3)
         
         with summary_col1:
-            st.info(f"**Target Coordinates:**\n\nLat: {target_lat:.6f}\nLon: {target_lon:.6f}")
+            st.info(f"**Coordinates**\n\nLat: {target_lat:.5f}\nLon: {target_lon:.5f}")
         
         with summary_col2:
             if suitability_score >= 70:
-                st.success(f"**Suitability Score: {suitability_score}/100**\n\nThis location has LOW competition and is SUITABLE for a new coffee shop.")
+                st.success(f"**Score: {suitability_score}/100**\n\nLow competition. Suitable for new shop.")
             elif suitability_score >= 40:
-                st.warning(f"**Suitability Score: {suitability_score}/100**\n\nThis location has MEDIUM competition. Consider carefully before proceeding.")
+                st.warning(f"**Score: {suitability_score}/100**\n\nMedium competition. Consider carefully.")
             else:
-                st.error(f"**Suitability Score: {suitability_score}/100**\n\nThis location has HIGH competition. NOT RECOMMENDED for a new coffee shop.")
+                st.error(f"**Score: {suitability_score}/100**\n\nHigh competition. Not recommended.")
         
         with summary_col3:
             if competitors_in_radius:
                 avg_rating = sum([c['rating'] for c in competitors_in_radius]) / len(competitors_in_radius)
-                st.info(f"**Nearby Competitors:** {competitor_count}\n\n**Average Rating:** {avg_rating:.1f}/5.0\n\n**Market Status:** {saturation_level}")
+                st.info(f"**Nearby:** {competitor_count} shops\n\n**Avg Rating:** {avg_rating:.1f}/5\n\n**Status:** {saturation_level}")
             else:
-                st.info("**No competitors found**\n\nThis is a great opportunity for a new coffee shop!")
+                st.info("**No competitors**\n\nGreat opportunity!")
     
     else:
         st.markdown("---")
-        st.info("👈 Enter a target address in the sidebar to see the buffer analysis and site suitability score.")
+        st.info("👈 Enter an address in the sidebar to see location analysis.")
     
-    # =========================================================================
-    # DATA OVERVIEW
-    # =========================================================================
-    
-    with st.expander("📋 View Coffee Shop Data Overview"):
-        st.dataframe(df, width='stretch')
-        st.markdown(f"**Total Coffee Shops in Dataset:** {len(df)}")
-        st.markdown(f"**Districts Covered:** {', '.join(df['district'].unique())}")
+    # Data Overview
+    with st.expander("📋 View Data"):
+        st.dataframe(df, use_container_width=True)
+        st.markdown(f"**Total Shops:** {len(df)} | **Districts:** {', '.join(df['district'].unique())}")
 
 # ============================================================================
 # MAIN EXECUTION
 # ============================================================================
 
 if __name__ == "__main__":
-    # Import folium_static for displaying maps in Streamlit
     from streamlit_folium import folium_static
     import folium
     
