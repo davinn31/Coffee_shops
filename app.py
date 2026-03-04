@@ -636,7 +636,7 @@ def main():
     # Header
     st.markdown("""
         <div class="app-header">
-            <h1>☕ Bandung Coffee Shop Site Selection</h1>
+            <h1>Bandung Coffee Shop Site Selection</h1>
             <p>Find the perfect location for your new coffee shop</p>
         </div>
     """, unsafe_allow_html=True)
@@ -656,18 +656,18 @@ def main():
     # SIDEBAR - SEARCH & LOCATION
     # =========================================================================
     
-    st.sidebar.markdown('<p class="section-title">🔍 Search & Location</p>', unsafe_allow_html=True)
+    st.sidebar.markdown('<p class="section-title">Search & Location</p>', unsafe_allow_html=True)
     
     # Search input in sidebar
     target_address = st.sidebar.text_input(
-        "📍 Search Address",
+        "Search Address",
         placeholder="e.g., Jalan Braga",
         value="",
         key="main_search"
     )
     
     st.sidebar.markdown("---")
-    st.sidebar.markdown('<p class="section-title">🎛️ Filters</p>', unsafe_allow_html=True)
+    st.sidebar.markdown('<p class="section-title">Filters</p>', unsafe_allow_html=True)
     
     # District filter
     selected_districts = st.sidebar.multiselect(
@@ -694,11 +694,11 @@ def main():
     ]
     
     st.sidebar.markdown("---")
-    st.sidebar.markdown('<p class="section-title">🗺️ Map Options</p>', unsafe_allow_html=True)
+    st.sidebar.markdown('<p class="section-title">Map Options</p>', unsafe_allow_html=True)
     
     # Map view toggle
     map_view_type = st.sidebar.selectbox(
-        "🗺️ Map View",
+        "Map View",
         options=["Heatmap", "Cluster"],
         index=0,
         key="map_view_toggle"
@@ -706,7 +706,7 @@ def main():
     
     # Radius selection
     radius_km = st.sidebar.slider(
-        "📏 Analysis Radius (km)",
+        "Analysis Radius (km)",
         min_value=0.5,
         max_value=5.0,
         value=1.0,
@@ -715,7 +715,7 @@ def main():
     )
     
     st.sidebar.markdown("---")
-    st.sidebar.markdown('<p class="section-title">📊 Overview</p>', unsafe_allow_html=True)
+    st.sidebar.markdown('<p class="section-title">Overview</p>', unsafe_allow_html=True)
     
     # Overview metrics
     col_s1, col_s2 = st.sidebar.columns(2)
@@ -757,7 +757,7 @@ def main():
         
         # Analysis results in sidebar
         st.sidebar.markdown("---")
-        st.sidebar.markdown('<p class="section-title">📈 Results</p>', unsafe_allow_html=True)
+        st.sidebar.markdown('<p class="section-title">Results</p>', unsafe_allow_html=True)
         
         st.sidebar.metric("Competitors", competitor_count)
         st.sidebar.metric("Saturation", saturation_level)
@@ -765,7 +765,7 @@ def main():
         
         # Show competitor details
         if competitors_in_radius:
-            st.sidebar.markdown("### 🏪 Nearby Competitors")
+            st.sidebar.markdown("### Nearby Competitors")
             comp_df = pd.DataFrame(competitors_in_radius)
             st.sidebar.dataframe(
                 comp_df[['name', 'distance', 'district', 'rating']].sort_values('distance'),
@@ -778,7 +778,7 @@ def main():
     # MAP DISPLAY
     # =========================================================================
     
-    st.markdown('<p class="section-title">🗺️ Location Map</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-title">Location Map</p>', unsafe_allow_html=True)
     
     # Display map based on view type and search state
     if target_address.strip() and target_lat and target_lon:
@@ -813,7 +813,7 @@ def main():
         with col_sum1:
             st.markdown("""
                 <div class="metric-card">
-                    <h4 style="margin:0; color: #a0a0a0;">📍 Coordinates</h4>
+                    <h4 style="margin:0; color: #a0a0a0;">Coordinates</h4>
                     <p style="font-size: 1.1rem; margin: 0.5rem 0 0;">Lat: {:.5f}<br>Lon: {:.5f}</p>
                 </div>
             """.format(target_lat, target_lon), unsafe_allow_html=True)
@@ -831,7 +831,7 @@ def main():
             
             st.markdown("""
                 <div class="metric-card">
-                    <h4 style="margin:0; color: #a0a0a0;">📊 Suitability Score</h4>
+                    <h4 style="margin:0; color: #a0a0a0;">Suitability Score</h4>
                     <p style="font-size: 2rem; margin: 0.5rem 0; color: {}; font-weight: bold;">{}/100</p>
                     <p style="font-size: 0.9rem; margin: 0; color: #a0a0a0;">{}</p>
                 </div>
@@ -842,19 +842,19 @@ def main():
                 avg_rating_comp = sum([c['rating'] for c in competitors_in_radius]) / len(competitors_in_radius)
                 st.markdown("""
                     <div class="metric-card">
-                        <h4 style="margin:0; color: #a0a0a0;">📈 Market Info</h4>
+                        <h4 style="margin:0; color: #a0a0a0;">Market Info</h4>
                         <p style="font-size: 1.1rem; margin: 0.5rem 0;">Nearby: {} shops<br>Avg Rating: {:.1f}/5<br>Saturation: {}</p>
                     </div>
                 """.format(competitor_count, avg_rating_comp, saturation_level), unsafe_allow_html=True)
             else:
                 st.markdown("""
                     <div class="metric-card">
-                        <h4 style="margin:0; color: #a0a0a0;">🎉 Opportunity</h4>
+                        <h4 style="margin:0; color: #a0a0a0;">Opportunity</h4>
                         <p style="font-size: 1.1rem; margin: 0.5rem 0;">No competitors within {} km radius!</p>
                     </div>
                 """.format(radius_km), unsafe_allow_html=True)
     else:
-        st.info("💡 Enter an address in the sidebar to see detailed location analysis.")
+        st.info("Enter an address in the sidebar to see detailed location analysis.")
     
     # =========================================================================
     # DISTRICT DISTRIBUTION CHART
@@ -864,7 +864,7 @@ def main():
     col_chart, col_spacer = st.columns([3, 1])
     
     with col_chart:
-        st.markdown('<p class="section-title">📊 District Distribution</p>', unsafe_allow_html=True)
+        st.markdown('<p class="section-title">District Distribution</p>', unsafe_allow_html=True)
         district_chart = create_district_chart(filtered_df)
         st.plotly_chart(district_chart, use_container_width=True, height=350)
     
@@ -872,7 +872,7 @@ def main():
     # DATA VIEW
     # =========================================================================
     
-    with st.expander("📋 View Filtered Data"):
+    with st.expander("View Filtered Data"):
         st.dataframe(
             filtered_df,
             use_container_width=True,
@@ -886,7 +886,5 @@ def main():
 # ============================================================================
 
 if __name__ == "__main__":
-    from streamlit_folium import folium_static
-    
     main()
 
