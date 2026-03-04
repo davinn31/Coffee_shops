@@ -105,7 +105,7 @@ st.markdown("""
     
     [data-testid="stMetric"] label {
         color: var(--text-muted) !important;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 500;
         text-transform: uppercase;
         letter-spacing: 0.05em;
@@ -113,7 +113,7 @@ st.markdown("""
     
     [data-testid="stMetric"] div {
         color: var(--text) !important;
-        font-size: 28px !important;
+        font-size: 18px !important;
         font-weight: 700;
     }
     
