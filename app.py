@@ -1,8 +1,3 @@
-"""
-Bandung Coffee Shop Site Selection Dashboard
-A Decision Support System (DSS) for coffee shop site selection in Bandung
-"""
-
 import streamlit as st
 import pandas as pd
 import geopandas as gpd
@@ -24,6 +19,161 @@ st.set_page_config(
     page_icon="☕",
     layout="wide"
 )
+
+# ============================================================================
+# CUSTOM CSS FOR HIGH-CONTRAST DARK MODE
+# ============================================================================
+
+# Define color palette
+DARK_CHARCOAL = "#1a1a2e"
+DEEP_NAVY = "#16213e"
+TEAL = "#0f969c"
+ELECTRIC_BLUE = "#00b4d8"
+GOLD = "#ffd700"
+WHITE = "#ffffff"
+LIGHT_GRAY = "#e0e0e0"
+DARK_TEXT = "#0f0f0f"
+
+# Apply custom CSS for dark mode theme
+st.markdown(f"""
+    <style>
+    /* Main Background - Dark Charcoal / Deep Navy */
+    .stApp {{
+        background-color: {DARK_CHARCOAL};
+        color: {WHITE};
+    }}
+    
+    /* Sidebar Background */
+    [data-testid="stSidebar"] {{
+        background-color: {DEEP_NAVY};
+    }}
+    
+    /* Sidebar Text */
+    [data-testid="stSidebar"] .stMarkdown, 
+    [data-testid="stSidebar"] .stText,
+    [data-testid="stSidebar"] .stMetric label,
+    [data-testid="stSidebar"] .stMetric div,
+    [data-testid="stSidebar"] .stSubheader,
+    [data-testid="stSidebar"] h1, 
+    [data-testid="stSidebar"] h2, 
+    [data-testid="stSidebar"] h3 {{
+        color: {WHITE} !important;
+    }}
+    
+    /* Headers and Titles */
+    h1, h2, h3, h4, h5, h6 {{
+        color: {ELECTRIC_BLUE} !important;
+    }}
+    
+    /* Metrics */
+    [data-testid="stMetric"] {{
+        background-color: {DEEP_NAVY};
+        padding: 15px;
+        border-radius: 10px;
+        border: 1px solid {TEAL};
+    }}
+    
+    [data-testid="stMetric"] label {{
+        color: {TEAL} !important;
+    }}
+    
+    [data-testid="stMetric"] div {{
+        color: {WHITE} !important;
+    }}
+    
+    /* Input Fields */
+    .stTextInput > div > div > input {{
+        background-color: {DEEP_NAVY};
+        color: {WHITE};
+        border: 1px solid {TEAL};
+    }}
+    
+    .stTextInput > div > div > input:focus {{
+        border-color: {ELECTRIC_BLUE};
+    }}
+    
+    /* Buttons */
+    .stButton > button {{
+        background-color: {TEAL};
+        color: {WHITE};
+        border: none;
+    }}
+    
+    .stButton > button:hover {{
+        background-color: {ELECTRIC_BLUE};
+    }}
+    
+    /* Dataframes */
+    [data-testid="stDataFrame"] {{
+        background-color: {DEEP_NAVY};
+    }}
+    
+    /* Expanders */
+    .streamlit-expanderHeader {{
+        background-color: {DEEP_NAVY};
+        color: {WHITE} !important;
+    }}
+    
+    /* Info/Warning/Success/Error boxes */
+    .stInfo {{
+        background-color: {DEEP_NAVY};
+        border-left: 4px solid {ELECTRIC_BLUE};
+        color: {WHITE};
+    }}
+    
+    .stWarning {{
+        background-color: {DEEP_NAVY};
+        border-left: 4px solid {GOLD};
+        color: {WHITE};
+    }}
+    
+    .stSuccess {{
+        background-color: {DEEP_NAVY};
+        border-left: 4px solid {TEAL};
+        color: {WHITE};
+    }}
+    
+    .stError {{
+        background-color: {DEEP_NAVY};
+        border-left: 4px solid #ff6b6b;
+        color: {WHITE};
+    }}
+    
+    /* Spinner */
+    [data-testid="stSpinner"] {{
+        color: {ELECTRIC_BLUE};
+    }}
+    
+    /* DataFrame table styling */
+    div[data-testid="stDataFrame"] table {{
+        color: {WHITE};
+    }}
+    
+    div[data-testid="stDataFrame"] th {{
+        background-color: {TEAL} !important;
+        color: {WHITE} !important;
+    }}
+    
+    div[data-testid="stDataFrame"] td {{
+        background-color: {DEEP_NAVY};
+        color: {WHITE};
+    }}
+    
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {{
+        width: 10px;
+    }}
+    
+    ::-webkit-scrollbar-track {{
+        background: {DARK_CHARCOAL};
+    }}
+    
+    ::-webkit-scrollbar-thumb {{
+        background: {TEAL};
+        border-radius: 5px;
+    }}
+    </style>
+    """, unsafe_allow_html=True)
 
 # ============================================================================
 # DATA INITIALIZATION
@@ -130,44 +280,47 @@ def get_market_saturation_level(competitor_count):
 def create_heatmap(df):
     """Create saturation heatmap centered on Bandung"""
     bandung_center = [-6.91, 107.61]
-    m = Map(location=bandung_center, zoom_start=12, tiles='cartodbpositron')
+    # Use dark tiles for high-contrast dark mode
+    m = Map(location=bandung_center, zoom_start=12, tiles='cartodbdark_matter')
     
-    # Prepare heat data
+    # Prepare heat data with Teal/Electric Blue gradient
     heat_data = [[row['latitude'], row['longitude']] for idx, row in df.iterrows()]
-    HeatMap(heat_data, radius=15, blur=10).add_to(m)
+    # Use Teal to Electric Blue gradient colors
+    HeatMap(heat_data, radius=15, blur=10, gradient={0.4: '#0f969c', 0.65: '#00b4d8', 1: '#00ffff'}).add_to(m)
     
     return m
 
 def create_map_with_buffer(target_lat, target_lon, df, competitors):
     """Create map with target location, buffer radius, and competitor markers"""
     bandung_center = [target_lat, target_lon]
-    m = Map(location=bandung_center, zoom_start=14, tiles='cartodbpositron')
+    # Use dark tiles for high-contrast dark mode
+    m = Map(location=bandung_center, zoom_start=14, tiles='cartodbdark_matter')
     
-    # Add buffer circle (1km radius)
+    # Add buffer circle (1km radius) - Teal color
     Circle(
         location=[target_lat, target_lon],
         radius=1000,  # meters
-        color='blue',
+        color='#0f969c',  # Teal
         fill=True,
-        fillColor='blue',
-        fillOpacity=0.1,
+        fillColor='#0f969c',  # Teal
+        fillOpacity=0.2,
         popup='1 KM Buffer Zone'
     ).add_to(m)
     
-    # Add target marker
+    # Add target marker - Gold color for highlight
     Marker(
         location=[target_lat, target_lon],
         popup='<b>Target Location</b>',
-        icon=folium.Icon(color='red', icon='star')
+        icon=folium.Icon(color='orange', icon='star', prefix='fa')
     ).add_to(m)
     
-    # Add competitor markers
+    # Add competitor markers - Electric Blue
     for comp in competitors:
         Marker(
             location=[df[df['name'] == comp['name']]['latitude'].values[0],
                      df[df['name'] == comp['name']]['longitude'].values[0]],
             popup=f"<b>{comp['name']}</b><br>District: {comp['district']}<br>Rating: {comp['rating']}<br>Distance: {comp['distance']} km",
-            icon=folium.Icon(color='green', icon='coffee')
+            icon=folium.Icon(color='blue', icon='coffee')
         ).add_to(m)
     
     return m
@@ -177,23 +330,40 @@ def create_district_chart(df):
     district_counts = df['district'].value_counts().reset_index()
     district_counts.columns = ['District', 'Number of Coffee Shops']
     
+    # Use Teal/Electric Blue color scale
     fig = px.bar(
         district_counts,
         x='District',
         y='Number of Coffee Shops',
         color='Number of Coffee Shops',
-        color_continuous_scale='Blues',
+        color_continuous_scale=['#0f969c', '#00b4d8', '#00ffff'],
         title='Coffee Shop Distribution by District in Bandung',
         text='Number of Coffee Shops'
     )
     
+    # Update layout for dark theme
     fig.update_layout(
         xaxis_title='District',
         yaxis_title='Number of Coffee Shops',
         showlegend=False,
-        font=dict(size=12),
-        width=None
+        font=dict(size=12, color='#ffffff'),
+        width=None,
+        paper_bgcolor='#16213e',
+        plot_bgcolor='#16213e',
+        xaxis=dict(
+            title_font=dict(color='#00b4d8'),
+            tickfont=dict(color='#ffffff'),
+            gridcolor='#0f969c'
+        ),
+        yaxis=dict(
+            title_font=dict(color='#00b4d8'),
+            tickfont=dict(color='#ffffff'),
+            gridcolor='#0f969c'
+        ),
+        title_font=dict(color='#00b4d8')
     )
+    
+    fig.update_traces(marker=dict(line=dict(color='#00ffff', width=1)))
     
     return fig
 
