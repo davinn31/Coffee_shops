@@ -565,9 +565,20 @@ def main():
     ratings = sorted(df['rating'].unique().tolist())
     
     # =========================================================================
-    # SIDEBAR - FILTERS & CONTROLS
+    # SIDEBAR - SEARCH & LOCATION
     # =========================================================================
     
+    st.sidebar.markdown('<p class="section-title">🔍 Search & Location</p>', unsafe_allow_html=True)
+    
+    # Search input in sidebar
+    target_address = st.sidebar.text_input(
+        "📍 Search Address",
+        placeholder="e.g., Jalan Braga",
+        value="",
+        key="main_search"
+    )
+    
+    st.sidebar.markdown("---")
     st.sidebar.markdown('<p class="section-title">🎛️ Filters</p>', unsafe_allow_html=True)
     
     # District filter
@@ -595,28 +606,7 @@ def main():
     ]
     
     st.sidebar.markdown("---")
-    st.sidebar.markdown('<p class="section-title">📊 Overview</p>', unsafe_allow_html=True)
-    
-    # Overview metrics
-    col_s1, col_s2 = st.sidebar.columns(2)
-    with col_s1:
-        st.metric("Total Shops", len(filtered_df))
-    with col_s2:
-        st.metric("Districts", len(selected_districts))
-    
-    avg_rating = filtered_df['rating'].mean() if len(filtered_df) > 0 else 0
-    st.sidebar.metric("Avg Rating", f"{avg_rating:.1f}")
-    
-    st.sidebar.markdown("---")
-    st.sidebar.markdown('<p class="section-title">🔍 Analysis</p>', unsafe_allow_html=True)
-    
-    # Search input in sidebar
-    target_address = st.sidebar.text_input(
-        "📍 Search Address",
-        placeholder="e.g., Jalan Braga",
-        value="",
-        key="main_search"
-    )
+    st.sidebar.markdown('<p class="section-title">🗺️ Map Options</p>', unsafe_allow_html=True)
     
     # Map view toggle
     map_view_type = st.sidebar.selectbox(
@@ -635,6 +625,19 @@ def main():
         step=0.5,
         help="Radius for competitor analysis"
     )
+    
+    st.sidebar.markdown("---")
+    st.sidebar.markdown('<p class="section-title">📊 Overview</p>', unsafe_allow_html=True)
+    
+    # Overview metrics
+    col_s1, col_s2 = st.sidebar.columns(2)
+    with col_s1:
+        st.metric("Total Shops", len(filtered_df))
+    with col_s2:
+        st.metric("Districts", len(selected_districts))
+    
+    avg_rating = filtered_df['rating'].mean() if len(filtered_df) > 0 else 0
+    st.sidebar.metric("Avg Rating", f"{avg_rating:.1f}")
     
     # =========================================================================
     # MAIN CONTENT
