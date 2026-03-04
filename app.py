@@ -73,12 +73,10 @@ st.markdown("""
         background: var(--card-bg);
         border-right: 1px solid var(--border);
         padding: 1rem;
-        /* Fixed Dimensioning */
-        width: 260px !important;
-        min-width: 260px !important;
-        max-width: 260px !important;
-        /* Screen Ratio Balance: Max 20% of viewport */
-        max-width: 20vw !important;
+        /* Fixed width with responsive max */
+        width: 280px !important;
+        min-width: 280px !important;
+        max-width: 280px !important;
     }
     
     /* Collapsed state */
