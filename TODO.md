@@ -1,42 +1,46 @@
-# TODO - Fix Cluster View
+# TODO - Code Cleanup & UI Improvements
 
-## Task: Fix cluster view performance and rendering issues
+## Task: Delete unused code and reorganize UI for elegance
 
-### Information Gathered:
-- The app has ~10,000 coffee shop locations in Bandung
-- There are two map views: Heatmap and Cluster
-- The `create_cluster_map` function exists and uses MarkerCluster from folium.plugins
-- The code imports MarkerCluster correctly
-- The cluster view may be slow or not rendering properly due to:
-  1. Adding popups to all 10,000 markers causes performance issues
-  2. Large dataset causes slow rendering
-  3. Need to optimize marker creation
+### Changes Made:
 
-### Plan:
-1. Optimize the `create_cluster_map` function:
-   - Remove popups from markers (they can be added on click via JavaScript callback)
-   - Use lighter CircleMarker without popup content initially
-   - Add options to customize cluster appearance
-   - Reduce initial cluster radius for better performance
+#### 1. Removed Unused Code:
+- ✅ Removed `geopandas as gpd` import (unused)
+- ✅ Removed `Point` from shapely.geometry import (unused)
+- ✅ Removed `create_geodataframe()` function (never called)
+- ✅ Removed `create_map_with_buffer()` function (never called)
 
-2. Add performance improvements:
-   - Limit initial markers to a subset when no address is searched
-   - Use chunked processing for large datasets
+#### 2. Reorganized UI:
+- ✅ Moved search input to sidebar for cleaner main area
+- ✅ Added filter controls in sidebar (district, rating)
+- ✅ Added overview metrics at top of sidebar
+- ✅ Improved map view toggle placement
+- ✅ Added radius selection slider for competitor analysis
+- ✅ Better organization with section titles in sidebar
+- ✅ Improved content layout with clearer sections
 
-### Dependent Files:
-- app.py - Main application file containing the cluster map function
+#### 3. Enhanced UI Elegance:
+- ✅ Modern dark theme with gradient backgrounds
+- ✅ Custom card styling with hover effects
+- ✅ Better typography with Inter font family
+- ✅ Color scheme with accent color (#e94560)
+- ✅ Improved metric display styling
+- ✅ Custom section titles with accent borders
+- ✅ Better spacing and visual hierarchy
+- ✅ Gradient header with animated text effect
+- ✅ Improved buttons with gradient and hover effects
+- ✅ Enhanced info boxes with better styling
 
-### Followup steps:
-- Test the cluster view with both small and large datasets
-- Verify map renders correctly with clustering enabled
-- Test toggle between Heatmap and Cluster views
+#### 4. Improved Functionality:
+- ✅ Added district filter (multiselect)
+- ✅ Added rating filter (slider)
+- ✅ Added radius selection for analysis
+- ✅ Added competitor details in sidebar
+- ✅ Added market info summary in analysis results
+- ✅ Filtered data updates map and charts dynamically
 
-### Status: Completed
+### Status: ✅ Completed
 
-## Changes Made:
-1. Changed from `Marker` to `folium.CircleMarker` for better cluster rendering
-2. Increased `disable_clustering_at_zoom` from 16 to 18 for better performance
-3. Increased `max_cluster_radius` from 50 to 60 for smoother clustering
-4. Increased marker radius from 4 to 5 with higher fillOpacity (0.8 vs 0.7) for better visibility
-5. Added explicit `icon_create_function=None` and `chunked_callback=None` parameters for compatibility
+### Files Modified:
+- app.py - Complete rewrite with cleaned code and improved UI
 
