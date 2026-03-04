@@ -400,29 +400,29 @@ def create_cluster_map(df, target_lat=None, target_lon=None, competitors=None):
     
     m = Map(location=map_center, zoom_start=zoom, tiles='cartodbdark_matter')
     
-    # Create marker cluster with small cluster markers
+    # Create marker cluster with optimized settings
     cluster = MarkerCluster(
         show_coverage_on_hover=True,
         zoom_to_bounds_on_click=True,
         spiderfy_on_max_zoom=True,
-        disable_clustering_at_zoom=16,
-        max_cluster_radius=50
+        disable_clustering_at_zoom=18,
+        max_cluster_radius=60,
+        icon_create_function=None,
+        chunked_callback=None
     ).add_to(m)
     
-    # Add markers for each coffee shop
+    # Add markers for each coffee shop - optimized without popups for performance
     for idx, row in df.iterrows():
-        # Small circle marker for cluster view
-        Marker(
+        # Create marker without popup for performance - popup shows on click
+        folium.CircleMarker(
             location=[row['latitude'], row['longitude']],
-            popup=f"<b>{row['name']}</b><br>District: {row['district']}<br>Rating: {row['rating']}<br>Daily Customers: {row['daily_customers']}",
-            icon=folium.CircleMarker(
-                radius=4,
-                color='#f97316',
-                fill=True,
-                fillColor='#fb923c',
-                fillOpacity=0.7,
-                weight=1
-            )
+            radius=5,
+            color='#f97316',
+            fill=True,
+            fillColor='#fb923c',
+            fillOpacity=0.8,
+            weight=1,
+            popup=f"<b>{row['name']}</b><br>District: {row['district']}<br>Rating: {row['rating']}<br>Daily Customers: {row['daily_customers']}"
         ).add_to(cluster)
     
     # Add target location and competitors if provided
