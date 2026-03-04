@@ -19,7 +19,7 @@ warnings.filterwarnings('ignore')
 
 st.set_page_config(
     page_title="Bandung Coffee Shop Site Selection",
-    page_icon="☕",
+    page_icon="coffee",
     layout="wide"
 )
 
@@ -135,8 +135,21 @@ st.markdown("""
     [data-testid="stDataFrame"] {
         background-color: var(--surface);
     }
+    
+    /* Developer credit - bottom left */
+    .developer-credit {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        font-size: 12px;
+        color: var(--secondary);
+        z-index: 9999;
+    }
     </style>
     """, unsafe_allow_html=True)
+
+# Add developer credit
+st.markdown('<div class="developer-credit">Developed by davin</div>', unsafe_allow_html=True)
 
 # ============================================================================
 # DATA LOADING WITH ERROR RECOVERY
@@ -147,7 +160,6 @@ def load_coffee_shop_data():
     """Load coffee shop data with error handling"""
     try:
         df = pd.read_csv('band_coffee_shops.csv')
-        # Validate required columns
         required_cols = ['name', 'latitude', 'longitude', 'district', 'rating']
         missing = [col for col in required_cols if col not in df.columns]
         if missing:
@@ -266,7 +278,6 @@ def create_heatmap(df, target_lat=None, target_lon=None, competitors=None):
     """Create saturation heatmap centered on Bandung, optionally with target location and competitors"""
     bandung_center = [-6.91, 107.61]
     
-    # If target location provided, center on it; otherwise center on Bandung
     if target_lat and target_lon:
         map_center = [target_lat, target_lon]
         zoom = 13
@@ -276,11 +287,9 @@ def create_heatmap(df, target_lat=None, target_lon=None, competitors=None):
     
     m = Map(location=map_center, zoom_start=zoom, tiles='cartodbdark_matter')
     
-    # Add heatmap layer
     heat_data = [[row['latitude'], row['longitude']] for idx, row in df.iterrows()]
     HeatMap(heat_data, radius=15, blur=10, gradient={0.4: '#f97316', 0.65: '#fb923c', 1: '#fdba74'}).add_to(m)
     
-    # Add target location marker and buffer if provided
     if target_lat and target_lon:
         Circle(
             location=[target_lat, target_lon],
@@ -298,7 +307,6 @@ def create_heatmap(df, target_lat=None, target_lon=None, competitors=None):
             icon=folium.Icon(color='green', icon='star', prefix='fa')
         ).add_to(m)
         
-        # Add competitor markers
         if competitors:
             for comp in competitors:
                 comp_lat = df[df['name'] == comp['name']]['latitude'].values[0]
@@ -352,7 +360,7 @@ def create_district_chart(df):
         x='District',
         y='Count',
         color='Count',
-        color_continuous_scale=['#f97316', '#fb923c', '#fdba74'],  # Orange gradient for high contrast
+        color_continuous_scale=['#f97316', '#fb923c', '#fdba74'],
         title='Coffee Shop Distribution by District',
         text='Count'
     )
@@ -377,7 +385,7 @@ def create_district_chart(df):
 
 def main():
     # Title
-    st.title("☕ Bandung Coffee Shop Site Selection")
+    st.title("Bandung Coffee Shop Site Selection")
     st.markdown("Analyze locations for new coffee shops in Bandung")
     st.markdown("---")
     
@@ -391,17 +399,34 @@ def main():
     gdf = create_geodataframe(df)
     
     # =========================================================================
-    # SIDEBAR - INPUT AND METRICS
+    # SIDEBAR - METRICS ONLY
     # =========================================================================
     
-    st.sidebar.header("📍 Target Location")
+    st.sidebar.header("Analysis Metrics")
     
-    # Address Input with Validation
-    target_address = st.sidebar.text_input(
-        "Enter Address (Bandung)",
-        placeholder="e.g., Jalan Braga",
-        value=""
-    )
+    competitors_in_radius = []
+    competitor_count = 0
+    suitability_score = 0
+    saturation_level = "N/A"
+    
+    # Display metrics
+    st.sidebar.metric("Competitors (1KM)", competitor_count)
+    st.sidebar.metric("Saturation", saturation_level)
+    st.sidebar.metric("Suitability", f"{suitability_score}/100")
+    
+    # =========================================================================
+    # MAIN AREA - SEARCH AND VISUALIZATIONS
+    # =========================================================================
+    
+    # Search input ABOVE the map
+    col_search1, col_search2 = st.columns([3, 1])
+    with col_search1:
+        target_address = st.text_input(
+            "Enter Address to Analyze (Bandung)",
+            placeholder="e.g., Jalan Braga",
+            value="",
+            key="main_search"
+        )
     
     geolocator = Nominatim(user_agent="bandung_coffee_dss")
     
@@ -409,57 +434,44 @@ def main():
     target_lon = None
     
     if target_address.strip():
-        with st.sidebar.spinner("Finding location..."):
+        with st.spinner("Finding location..."):
             target_lat, target_lon = geocode_address(target_address, geolocator)
         
         if target_lat is None:
-            st.sidebar.warning("Address not found. Try a different location in Bandung.")
+            st.warning("Address not found. Try a different location in Bandung.")
     
-    # Key Metrics
-    st.sidebar.markdown("---")
-    st.sidebar.header("📊 Analysis Metrics")
-    
-    competitors_in_radius = []
-    competitor_count = 0
-    suitability_score = 0
-    saturation_level = "N/A"
-    
+    # Update sidebar metrics if address was entered
     if target_lat and target_lon:
         competitors_in_radius = find_competitors_in_radius(target_lat, target_lon, df, radius_km=1.0)
         competitor_count = len(competitors_in_radius)
         suitability_score = calculate_suitability_score(competitor_count)
         saturation_level = get_market_saturation_level(competitor_count)
-    
-    # Display metrics
-    st.sidebar.metric("Competitors (1KM)", competitor_count)
-    st.sidebar.metric("Saturation", saturation_level)
-    st.sidebar.metric("Suitability", f"{suitability_score}/100")
-    
-    # Competitor details
-    if competitors_in_radius:
-        st.sidebar.markdown("---")
-        st.sidebar.subheader("🏪 Nearby Competitors")
-        comp_df = pd.DataFrame(competitors_in_radius)
-        st.sidebar.dataframe(
-            comp_df[['name', 'distance', 'district']].sort_values('distance'),
-            hide_index=True,
-            use_container_width=True
-        )
-    
-    # =========================================================================
-    # MAIN AREA - VISUALIZATIONS
-    # =========================================================================
+        
+        # Update sidebar metrics
+        st.sidebar.metric("Competitors (1KM)", competitor_count)
+        st.sidebar.metric("Saturation", saturation_level)
+        st.sidebar.metric("Suitability", f"{suitability_score}/100")
+        
+        # Show competitor details in sidebar
+        if competitors_in_radius:
+            st.sidebar.markdown("---")
+            st.sidebar.subheader("Nearby Competitors")
+            comp_df = pd.DataFrame(competitors_in_radius)
+            st.sidebar.dataframe(
+                comp_df[['name', 'distance', 'district']].sort_values('distance'),
+                hide_index=True,
+                use_container_width=True
+            )
     
     # Unified Map: Heatmap + Result Address (bigger map at height 600)
     if target_address.strip() and target_lat and target_lon:
-        st.subheader(f"🔥 Competition Heatmap & Analysis: {target_address}")
-        # Unified map with heatmap + target location + competitors
+        st.subheader(f"Competition Heatmap & Analysis: {target_address}")
         unified_map = create_heatmap(df, target_lat, target_lon, competitors_in_radius)
         folium_static(unified_map, height=600)
     
     # Row: Heatmap only (when no address entered)
     else:
-        st.subheader("🔥 Competition Heatmap")
+        st.subheader("Competition Heatmap")
         heatmap = create_heatmap(df)
         folium_static(heatmap, height=600)
     
@@ -467,7 +479,7 @@ def main():
     col_chart, col_spacer = st.columns([1, 1])
     
     with col_chart:
-        st.subheader("📊 District Distribution")
+        st.subheader("District Distribution")
         district_chart = create_district_chart(df)
         st.plotly_chart(district_chart, use_container_width=True, height=300)
     
@@ -475,7 +487,7 @@ def main():
     if target_address.strip() and target_lat and target_lon:
         
         # Summary
-        st.markdown("<h4 style='font-size:16px; margin-bottom:0;'>📋 Summary</h4>", unsafe_allow_html=True)
+        st.markdown("<h4 style='font-size:16px; margin-bottom:0;'>Summary</h4>", unsafe_allow_html=True)
         
         summary_col1, summary_col2, summary_col3 = st.columns(3)
         
@@ -499,10 +511,10 @@ def main():
     
     else:
         st.markdown("---")
-        st.info("👈 Enter an address in the sidebar to see location analysis.")
+        st.info("Enter an address above to see location analysis.")
     
     # Data Overview
-    with st.expander("📋 View Data"):
+    with st.expander("View Data"):
         st.dataframe(df, use_container_width=True)
         st.markdown(f"**Total Shops:** {len(df)} | **Districts:** {', '.join(df['district'].unique())}")
 
