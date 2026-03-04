@@ -159,11 +159,19 @@ st.markdown('<div class="developer-credit">Developed by davin</div>', unsafe_all
 def load_coffee_shop_data():
     """Load coffee shop data with error handling"""
     try:
+        # Set pandas display options to show all rows
+        pd.set_option('display.max_rows', None)
+        pd.set_option('display.max_columns', None)
+        pd.set_option('display.width', None)
+        
         df = pd.read_csv('band_coffee_shops.csv')
         required_cols = ['name', 'latitude', 'longitude', 'district', 'rating']
         missing = [col for col in required_cols if col not in df.columns]
         if missing:
             raise ValueError(f"Missing required columns: {missing}")
+        
+        # Ensure all rows are loaded
+        print(f"Loaded {len(df)} rows from CSV")
         return df
     except FileNotFoundError:
         st.error("Data file not found. Please ensure 'band_coffee_shops.csv' exists in the project directory.")
@@ -601,7 +609,18 @@ def main():
     
     # Data Overview
     with st.expander("View Data"):
-        st.dataframe(df, use_container_width=True)
+        # Configure pandas to show all rows
+        pd.set_option('display.max_rows', None)
+        pd.set_option('display.max_columns', None)
+        pd.set_option('display.width', None)
+        
+        # Display dataframe with custom height to show all rows
+        st.dataframe(
+            df, 
+            use_container_width=True, 
+            height=800,  # Custom height to show more rows
+            hide_index=False
+        )
         st.markdown(f"**Total Shops:** {len(df)} | **Districts:** {', '.join(df['district'].unique())}")
 
 # ============================================================================
