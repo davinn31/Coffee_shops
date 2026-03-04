@@ -263,15 +263,73 @@ st.markdown("""
         margin: 0.5rem 0 0;
     }
     
-    /* Section Title */
+    /* Section Title - Navigation & Headers: 14px Semi-bold */
     .section-title {
-        font-size: 1.1rem;
-        font-weight: 600;
+        font-size: 14px !important;
+        font-weight: 600 !important;
         color: var(--text);
         margin-bottom: 1rem;
         padding-bottom: 0.5rem;
         border-bottom: 2px solid var(--accent);
         display: inline-block;
+    }
+    
+    /* Sidebar Headers */
+    [data-testid="stSidebar"] h1,
+    [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] h3 {
+        color: var(--text);
+        font-size: 14px !important;
+        font-weight: 600;
+    }
+    
+    /* ============================================
+       GIS SIDEBAR TYPOGRAPHY - COMPLETE SYSTEM
+       ============================================ */
+    
+    /* Layer List & Inputs: 12px Regular - Optimize vertical space for complex data trees */
+    [data-testid="stSidebar"] .stTextInput > div > div > input,
+    [data-testid="stSidebar"] .stSelectbox > div > div,
+    [data-testid="stSidebar"] .stMultiSelect > div > div,
+    [data-testid="stSidebar"] .stSlider [role="slider"],
+    [data-testid="stSidebar"] [data-baseweb="select"] > div,
+    [data-testid="stSidebar"] .stTextArea > div > div > textarea {
+        font-size: 12px !important;
+        font-weight: 400 !important;
+    }
+    
+    /* Labels for inputs in sidebar */
+    [data-testid="stSidebar"] .stTextInput label,
+    [data-testid="stSidebar"] .stSelectbox label,
+    [data-testid="stSidebar"] .stMultiSelect label,
+    [data-testid="stSidebar"] .stSlider label {
+        font-size: 12px !important;
+        font-weight: 400 !important;
+        color: var(--text-muted) !important;
+    }
+    
+    /* Supplementary Info: 10-11px Regular - Coordinates, scales, metadata */
+    [data-testid="stSidebar"] .stMetric label,
+    [data-testid="stMetric"] label {
+        font-size: 11px !important;
+        font-weight: 400 !important;
+    }
+    
+    /* Sidebar markdown and small text */
+    [data-testid="stSidebar"] .stMarkdown p,
+    [data-testid="stSidebar"] p,
+    [data-testid="stSidebar"] .small-text {
+        font-size: 12px !important;
+        font-weight: 400 !important;
+    }
+    
+    /* Coordinates and metadata display */
+    [data-testid="stSidebar"] .coordinate-display,
+    [data-testid="stSidebar"] .metadata-info,
+    [data-testid="stSidebar"] .scale-info {
+        font-size: 11px !important;
+        font-weight: 400 !important;
+        color: var(--text-muted) !important;
     }
     
     /* Developer credit */

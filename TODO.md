@@ -1,23 +1,35 @@
-# Sidebar Revisions TODO
+# TODO - GIS Sidebar Typography Update
 
-## Status: COMPLETED ✅
+## Task
+Update sidebar typography for better readability and accessibility
 
-### Implementation Summary:
+## Changes Required
 
-1. **Fixed Dimensioning CSS Applied:**
-   - Expanded width: 260px
-   - Collapsed width: 64px
+- [x] Analyze current CSS typography in app.py
+- [x] Implement Navigation & Headers: 14px, Semi-bold (600)
+- [x] Implement Layer List & Inputs: 12px, Regular (400)
+- [x] Implement Supplementary Info: 10-11px, Regular (400)
+- [x] Verify contrast ratio meets 4.5:1 requirement
+- [ ] Test the application
 
-2. **Screen Ratio Balance CSS Applied:**
-   - max-width: 20vw (20% of viewport)
+## Implementation Details
 
-3. **Standardized Click-Targets CSS Applied:**
-   - All interactive elements set to minimum 44px height
-   - Targets: buttons, inputs, selects, sliders, multiselect
+### 1. Navigation & Headers (.section-title)
+- Size: 14px
+- Weight: 600 (Semi-bold)
+- Applied to: Sidebar section titles
 
-### Files Edited:
-- app.py - Updated CSS in the style block
+### 2. Layer List & Inputs
+- Size: 12px
+- Weight: 400 (Regular)
+- Applied to: Input fields, select boxes, multi-selects, sliders
 
-### Follow-up Steps:
-- Test the sidebar behavior in browser ✅
+### 3. Supplementary Info
+- Size: 10-11px
+- Weight: 400 (Regular)
+- Applied to: Metric labels, coordinates, metadata
+
+### 4. Contrast
+- Current text: #eaeaea on background #1a1a2e
+- Current ratio: ~14:1 (meets 4.5:1 requirement)
 
