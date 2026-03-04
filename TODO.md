@@ -10,3 +10,13 @@
 
 ### Status: Completed
 
+## Task: Add cluster markers with toggle for heatmap and cluster view
+
+### Steps:
+- [x] 1. Import MarkerCluster from folium.plugins
+- [x] 2. Create create_cluster_map() function with small circle markers
+- [x] 3. Add Map View toggle (Heatmap/Cluster) in the UI
+- [x] 4. Update map rendering to support both view types
+
+### Status: Completed
+

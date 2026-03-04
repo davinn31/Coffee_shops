@@ -3,7 +3,7 @@ import pandas as pd
 import geopandas as gpd
 from shapely.geometry import Point
 from folium import Map, Marker, Circle
-from folium.plugins import HeatMap
+from folium.plugins import HeatMap, MarkerCluster
 import folium
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderServiceError
@@ -379,6 +379,74 @@ def create_district_chart(df):
     
     return fig
 
+def create_cluster_map(df, target_lat=None, target_lon=None, competitors=None):
+    """Create map with clustered markers centered on Bandung"""
+    bandung_center = [-6.91, 107.61]
+    
+    if target_lat and target_lon:
+        map_center = [target_lat, target_lon]
+        zoom = 13
+    else:
+        map_center = bandung_center
+        zoom = 12
+    
+    m = Map(location=map_center, zoom_start=zoom, tiles='cartodbdark_matter')
+    
+    # Create marker cluster with small cluster markers
+    cluster = MarkerCluster(
+        show_coverage_on_hover=True,
+        zoom_to_bounds_on_click=True,
+        spiderfy_on_max_zoom=True,
+        disable_clustering_at_zoom=16,
+        max_cluster_radius=50
+    ).add_to(m)
+    
+    # Add markers for each coffee shop
+    for idx, row in df.iterrows():
+        # Small circle marker for cluster view
+        Marker(
+            location=[row['latitude'], row['longitude']],
+            popup=f"<b>{row['name']}</b><br>District: {row['district']}<br>Rating: {row['rating']}<br>Daily Customers: {row['daily_customers']}",
+            icon=folium.CircleMarker(
+                radius=4,
+                color='#f97316',
+                fill=True,
+                fillColor='#fb923c',
+                fillOpacity=0.7,
+                weight=1
+            )
+        ).add_to(cluster)
+    
+    # Add target location and competitors if provided
+    if target_lat and target_lon:
+        Circle(
+            location=[target_lat, target_lon],
+            radius=1000,
+            color='#22c55e',
+            fill=True,
+            fillColor='#22c55e',
+            fillOpacity=0.2,
+            popup='1 KM Buffer Zone'
+        ).add_to(m)
+        
+        Marker(
+            location=[target_lat, target_lon],
+            popup='<b>Target Location</b>',
+            icon=folium.Icon(color='green', icon='star', prefix='fa')
+        ).add_to(m)
+        
+        if competitors:
+            for comp in competitors:
+                comp_lat = df[df['name'] == comp['name']]['latitude'].values[0]
+                comp_lon = df[df['name'] == comp['name']]['longitude'].values[0]
+                Marker(
+                    location=[comp_lat, comp_lon],
+                    popup=f"<b>{comp['name']}</b><br>District: {comp['district']}<br>Rating: {comp['rating']}<br>Distance: {comp['distance']} km",
+                    icon=folium.Icon(color='red', icon='coffee')
+                ).add_to(m)
+    
+    return m
+
 # ============================================================================
 # MAIN APPLICATION
 # ============================================================================
@@ -422,10 +490,19 @@ def main():
     col_search1, col_search2 = st.columns([3, 1])
     with col_search1:
         target_address = st.text_input(
-            "Enter Address to Analyze (Bandung)",
+            "Search Address",
             placeholder="e.g., Jalan Braga",
             value="",
             key="main_search"
+        )
+    
+    # Map view toggle - Heatmap or Cluster
+    with col_search2:
+        map_view_type = st.selectbox(
+            "Map View",
+            options=["Heatmap", "Cluster"],
+            index=0,
+            key="map_view_toggle"
         )
     
     geolocator = Nominatim(user_agent="bandung_coffee_dss")
@@ -463,17 +540,26 @@ def main():
                 use_container_width=True
             )
     
-    # Unified Map: Heatmap + Result Address (bigger map at height 600)
+    # Unified Map: Display based on selected view type (bigger map at height 600)
     if target_address.strip() and target_lat and target_lon:
-        st.subheader(f"Competition Heatmap & Analysis: {target_address}")
-        unified_map = create_heatmap(df, target_lat, target_lon, competitors_in_radius)
+        if map_view_type == "Heatmap":
+            st.subheader(f"Competition Heatmap & Analysis: {target_address}")
+            unified_map = create_heatmap(df, target_lat, target_lon, competitors_in_radius)
+        else:
+            st.subheader(f"Competition Clusters & Analysis: {target_address}")
+            unified_map = create_cluster_map(df, target_lat, target_lon, competitors_in_radius)
         folium_static(unified_map, height=600)
     
-    # Row: Heatmap only (when no address entered)
+    # Row: Display based on selected view type (when no address entered)
     else:
-        st.subheader("Competition Heatmap")
-        heatmap = create_heatmap(df)
-        folium_static(heatmap, height=600)
+        if map_view_type == "Heatmap":
+            st.subheader("Competition Heatmap")
+            heatmap = create_heatmap(df)
+            folium_static(heatmap, height=600)
+        else:
+            st.subheader("Competition Clusters")
+            cluster_map = create_cluster_map(df)
+            folium_static(cluster_map, height=600)
     
     # Row: District Chart (slimmer at height 300)
     col_chart, col_spacer = st.columns([1, 1])
